@@ -1,11 +1,11 @@
 require('dotenv').config();
 const { createServer } = require('http');
 const express = require('express');
-const bodyParser = require('body-parser');
+//const bodyParser = require('body-parser');
 const { createEventAdapter } = require('@slack/events-api');
 const { WebClient } = require('@slack/web-api');
 const { strict } = require('assert');
-//const fetch = require('node-fetch');
+const fetch = require('node-fetch');
 //import JsFileDownloader from ('js-file-downloader');
 const fs = require('fs');
 const token = process.env.SLACK_TOKEN;
@@ -21,7 +21,7 @@ const app = express();
 app.use('/slack/events', slackEvents.requestListener());
 
 // BodyParser - deprecated, look for alternatives
-app.use(bodyParser());
+// app.use(bodyParser());
 
 // Receive and process file events here
 slackEvents.on('file_created', async (event) => {
@@ -40,7 +40,7 @@ slackEvents.on('file_created', async (event) => {
   console.log(`New file URL variable: ${file_url}`);
   console.log(`New File Name: ${file_name}`);
 
-  //await downloadFile(file_url, `downloaded/${file_name}`)
+  await downloadFile(file_url, `downloaded/${file_name}`, token)
   //const file = fs.readFileSync(`downloaded/${file_name}`);
   //console.log(file)
   // JsFileDownloader({ 
@@ -52,9 +52,10 @@ slackEvents.on('file_created', async (event) => {
 
 });
 
-const downloadFile = (async (url, path) => {
+const downloadFile = (async (url, path, token) => {
   const res = await fetch(url, {
     method: "GET",
+    headers: {"Authorization": `Bearer ${token}`}
 
   })
   const fileStream = fs.createWriteStream(path);
